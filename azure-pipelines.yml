@@ -1,0 +1,32 @@
+  
+schedules:
+  - cron: "0 17 * * 1-5"
+    displayName: "Nightly run of Selenium tests"
+    branches:
+      include:
+      - master
+    always: "true"
+
+trigger:
+  - master
+
+pr:
+  - master
+
+pool:
+  vmImage: Ubuntu-16.04
+
+steps:
+- task: BrowserStackConfig@0
+  inputs:
+    BrowserStackServiceEndPoint: 'BrowserStack'
+    
+- task: Npm@1
+  inputs:
+    command: 'install'
+
+- script: 'node node_modules/protractor/bin/protractor e2e_desktop.js --params.cardType.enets'
+  displayName: 'Run end-to-end desktop tests'  
+
+- task: BrowserStackResults@0
+  condition: succeededOrFailed()
